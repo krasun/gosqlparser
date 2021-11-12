@@ -12,10 +12,27 @@ func TestLexer(t *testing.T) {
 		expectedTokens []token
 	}{
 		{
-			"simple identifier",
+			"select keyword only",
 			"SELECT",
 			[]token{
-				{tokenIdentifier, "SELECT"},
+				{tokenSelect, "SELECT"},
+				{tokenEnd, ""},
+			},
+		},
+		{
+			"keywords and spaces",
+			"SELECT FROM AS WHERE LIMIT",
+			[]token{
+				{tokenSelect, "SELECT"},
+				{tokenSpace, " "},
+				{tokenFrom, "FROM"},
+				{tokenSpace, " "},
+				{tokenAlias, "AS"},
+				{tokenSpace, " "},
+				{tokenWhere, "WHERE"},
+				{tokenSpace, " "},
+				{tokenLimit, "LIMIT"},
+				{tokenEnd, ""},
 			},
 		},
 	}
