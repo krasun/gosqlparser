@@ -34,11 +34,11 @@ const (
 	tokenField
 	tokenEnd
 
-	tokenEq  // "=="
-	tokenLt  // "<"
-	tokenLte // "<="
-	tokenGt  // ">"
-	tokenGte // ">="
+	// tokenEq  // "=="
+	// tokenLt  // "<"
+	// tokenLte // "<="
+	// tokenGt  // ">"
+	// tokenGte // ">="
 
 	tokenSelect // "SELECT"
 	tokenFrom   // "FROM"
