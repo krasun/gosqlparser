@@ -35,6 +35,28 @@ func TestLexer(t *testing.T) {
 				{tokenEnd, ""},
 			},
 		},
+		{
+			"keywords and identifiers",
+			"SELECT field FROM table AS t WHERE LIMIT",
+			[]token{
+				{tokenSelect, "SELECT"},
+				{tokenSpace, " "},
+				{tokenIdentifier, "field"},
+				{tokenSpace, " "},
+				{tokenFrom, "FROM"},
+				{tokenSpace, " "},
+				{tokenIdentifier, "table"},
+				{tokenSpace, " "},
+				{tokenAlias, "AS"},
+				{tokenSpace, " "},
+				{tokenIdentifier, "t"},
+				{tokenSpace, " "},
+				{tokenWhere, "WHERE"},
+				{tokenSpace, " "},
+				{tokenLimit, "LIMIT"},
+				{tokenEnd, ""},
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
