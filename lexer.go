@@ -1,6 +1,7 @@
 package gosqlparser
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -27,24 +28,17 @@ type token struct {
 type tokenType int
 
 const (
-	tokenError tokenType = iota
-	tokenSpace
-	tokenIdentifier
-	tokenDot
-	tokenField
-	tokenEnd
-
-	// tokenEq  // "=="
-	// tokenLt  // "<"
-	// tokenLte // "<="
-	// tokenGt  // ">"
-	// tokenGte // ">="
-
-	tokenSelect // "SELECT"
-	tokenFrom   // "FROM"
-	tokenWhere  // "WHERE"
-	tokenLimit  // "LIMIT"
-	tokenAlias  // "AS"
+	tokenError      tokenType = iota
+	tokenSpace                // whitespace
+	tokenIdentifier           // table or column name
+	tokenEnd                  // the end of the input
+	tokenEquals               // "=="
+	tokenDelimeter            // ','
+	tokenAnd                  // "AND"
+	tokenSelect               // "SELECT"
+	tokenFrom                 // "FROM"
+	tokenWhere                // "WHERE"
+	tokenLimit                // "LIMIT"
 )
 
 const (
@@ -52,15 +46,15 @@ const (
 	keywordFrom   = "FROM"
 	keywordWhere  = "WHERE"
 	keywordLimit  = "LIMIT"
-	keywordAlias  = "AS"
+	keywordAnd    = "AND"
 )
 
 var keywords = map[string]tokenType{
 	keywordSelect: tokenSelect,
 	keywordFrom:   tokenFrom,
 	keywordWhere:  tokenWhere,
-	keywordAlias:  tokenAlias,
 	keywordLimit:  tokenLimit,
+	keywordAnd:    tokenAnd,
 }
 
 const end = -1
@@ -86,7 +80,7 @@ func newLexer(input string) *lexer {
 }
 
 func (l *lexer) run() {
-	for state := lexInit; state != nil; {
+	for state := lexStatement; state != nil; {
 		state = state(l)
 	}
 
@@ -125,7 +119,7 @@ func (l *lexer) peek() rune {
 	return r
 }
 
-func lexInit(l *lexer) stateFunc {
+func lexStatement(l *lexer) stateFunc {
 	r := l.next()
 
 	switch true {
@@ -134,7 +128,18 @@ func lexInit(l *lexer) stateFunc {
 	case unicode.IsSpace(r):
 		l.produce(tokenSpace)
 
-		return lexInit
+		return lexStatement
+	case r == ',':
+		l.produce(tokenDelimeter)
+		return lexStatement
+	case r == '=':
+		if l.next() != '=' {
+			return l.errorf("expected =")
+		}
+
+		l.produce(tokenEquals)
+
+		return lexStatement
 	case r == end:
 
 		l.produce(tokenEnd)
@@ -162,7 +167,13 @@ func lexIdentifier(l *lexer) stateFunc {
 		l.produce(tokenIdentifier)
 	}
 
-	return lexInit
+	return lexStatement
+}
+
+func (l *lexer) errorf(format string, args ...interface{}) stateFunc {
+	l.tokens <- token{tokenError, fmt.Sprintf(format, args...)}
+
+	return nil
 }
 
 func isAlphaNumeric(r rune) bool {
