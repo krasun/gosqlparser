@@ -15,6 +15,13 @@ As simple as:
 go get github.com/krasun/gosqlparser
 ```
 
+## Supported Statements
+
+1. SELECT: 
+```
+SELECT c1, c2 FROM table1 WHERE c3 == c4 AND c5 == c6
+```
+
 ## Usage 
 
 ... 
