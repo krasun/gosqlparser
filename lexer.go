@@ -33,6 +33,7 @@ const (
 	tokenIdentifier           // table or column name
 	tokenEnd                  // the end of the input
 	tokenEquals               // "=="
+	tokenAssign               // "="
 	tokenDelimeter            // ','
 	tokenLeftPar              // '('
 	tokenRightPar             // ')'
@@ -47,6 +48,8 @@ const (
 	tokenWhere                // WHERE
 	tokenLimit                // LIMIT
 	tokenValues               // VALUES
+	tokenUpdate               // UPDATE
+	tokenSet                  // SET
 )
 
 const (
@@ -59,6 +62,8 @@ const (
 	keywordLimit  = "LIMIT"
 	keywordAnd    = "AND"
 	keywordValues = "VALUES"
+	keywordUpdate = "UPDATE"
+	keywordSet    = "SET"
 )
 
 var keywords = map[string]tokenType{
@@ -71,6 +76,8 @@ var keywords = map[string]tokenType{
 	keywordInto:   tokenInto,
 	keywordValues: tokenValues,
 	keywordDelete: tokenDelete,
+	keywordUpdate: tokenUpdate,
+	keywordSet:    tokenSet,
 }
 
 const end = -1
@@ -159,11 +166,13 @@ func lexStatement(l *lexer) stateFunc {
 		l.produce(tokenDelimeter)
 		return lexStatement
 	case r == '=':
-		if l.next() != '=' {
-			return l.errorf("expected =")
+		switch l.peek() {
+		case '=':
+			l.next()
+			l.produce(tokenEquals)
+		default:
+			l.produce(tokenAssign)
 		}
-
-		l.produce(tokenEquals)
 
 		return lexStatement
 	case r == end:
@@ -172,8 +181,7 @@ func lexStatement(l *lexer) stateFunc {
 		return nil
 	}
 
-	// TODO: resolve
-	panic("unreachable")
+	return l.errorf("unexpected rune")
 }
 
 // lexInteger lexes an integer.

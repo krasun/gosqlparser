@@ -31,6 +31,11 @@ INSERT:
 INSERT INTO table1 (c1, c2, c3) VALUES (5, "some string", 10)
 ```
 
+UPDATE: 
+```
+UPDATE table1 SET c1 = 10 WHERE c1 == 5 AND c3 == "quoted string"
+```
+
 DELETE: 
 ```
 DELETE FROM table1 WHERE c1 == 5 AND c3 == "quoted string"
