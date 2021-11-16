@@ -15,16 +15,21 @@ As simple as:
 go get github.com/krasun/gosqlparser
 ```
 
+## Usage 
+
+... 
+
 ## Supported Statements
 
-1. SELECT: 
+SELECT: 
 ```
 SELECT c1, c2 FROM table1 WHERE c3 == c4 AND c5 == c6
 ```
 
-## Usage 
-
-... 
+INSERT: 
+```
+INSERT INTO table1 (c1, c2, c3) VALUES (5, "some string", 10)
+```
 
 ## Tests 
 

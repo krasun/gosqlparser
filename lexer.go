@@ -34,19 +34,29 @@ const (
 	tokenEnd                  // the end of the input
 	tokenEquals               // "=="
 	tokenDelimeter            // ','
+	tokenLeftPar              // '('
+	tokenRightPar             // ')'
+	tokenInteger              // integer
+	tokenString               // string including quotes
 	tokenAnd                  // "AND"
+	tokenInsert               // "INSERT"
+	tokenInto                 // "INTO"
 	tokenSelect               // "SELECT"
 	tokenFrom                 // "FROM"
 	tokenWhere                // "WHERE"
 	tokenLimit                // "LIMIT"
+	tokenValues               // "VALUES"
 )
 
 const (
 	keywordSelect = "SELECT"
+	keywordInsert = "INSERT"
+	keywordInto   = "INTO"
 	keywordFrom   = "FROM"
 	keywordWhere  = "WHERE"
 	keywordLimit  = "LIMIT"
 	keywordAnd    = "AND"
+	keywordValues = "VALUES"
 )
 
 var keywords = map[string]tokenType{
@@ -55,6 +65,9 @@ var keywords = map[string]tokenType{
 	keywordWhere:  tokenWhere,
 	keywordLimit:  tokenLimit,
 	keywordAnd:    tokenAnd,
+	keywordInsert: tokenInsert,
+	keywordInto:   tokenInto,
+	keywordValues: tokenValues,
 }
 
 const end = -1
@@ -123,12 +136,22 @@ func lexStatement(l *lexer) stateFunc {
 	r := l.next()
 
 	switch true {
+	case unicode.IsDigit(r):
+		return lexInteger
 	case isAlphaNumeric(r):
 		return lexIdentifier
 	case unicode.IsSpace(r):
 		l.produce(tokenSpace)
 
 		return lexStatement
+	case r == '(':
+		l.produce(tokenLeftPar)
+		return lexStatement
+	case r == ')':
+		l.produce(tokenRightPar)
+		return lexStatement
+	case r == '"':
+		return lexString
 	case r == ',':
 		l.produce(tokenDelimeter)
 		return lexStatement
@@ -148,6 +171,36 @@ func lexStatement(l *lexer) stateFunc {
 
 	// TODO: resolve
 	panic("unreachable")
+}
+
+// lexInteger lexes an integer.
+func lexInteger(l *lexer) stateFunc {
+	r := l.peek()
+	if unicode.IsDigit(r) {
+		l.next()
+
+		return lexInteger
+	}
+
+	l.produce(tokenInteger)
+
+	return lexStatement
+}
+
+// lexString lexes a quoted string.
+func lexString(l *lexer) stateFunc {
+	r := l.next()
+
+	switch r {
+	case '"':
+		l.produce(tokenString)
+
+		return lexStatement
+	case end:
+		return l.errorf("expected \"")
+	}
+
+	return lexString
 }
 
 func lexIdentifier(l *lexer) stateFunc {
