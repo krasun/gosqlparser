@@ -31,6 +31,11 @@ INSERT:
 INSERT INTO table1 (c1, c2, c3) VALUES (5, "some string", 10)
 ```
 
+DELETE: 
+```
+DELETE FROM table1 WHERE c1 == 5 AND c3 == "quoted string"
+```
+
 ## Tests 
 
 To make sure that the code is fully tested and covered:

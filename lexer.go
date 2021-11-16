@@ -38,19 +38,21 @@ const (
 	tokenRightPar             // ')'
 	tokenInteger              // integer
 	tokenString               // string including quotes
-	tokenAnd                  // "AND"
-	tokenInsert               // "INSERT"
-	tokenInto                 // "INTO"
-	tokenSelect               // "SELECT"
-	tokenFrom                 // "FROM"
-	tokenWhere                // "WHERE"
-	tokenLimit                // "LIMIT"
-	tokenValues               // "VALUES"
+	tokenAnd                  // AND
+	tokenInsert               // INSERT
+	tokenInto                 // INTO
+	tokenSelect               // SELECT
+	tokenDelete               // DELETE
+	tokenFrom                 // FROM
+	tokenWhere                // WHERE
+	tokenLimit                // LIMIT
+	tokenValues               // VALUES
 )
 
 const (
 	keywordSelect = "SELECT"
 	keywordInsert = "INSERT"
+	keywordDelete = "DELETE"
 	keywordInto   = "INTO"
 	keywordFrom   = "FROM"
 	keywordWhere  = "WHERE"
@@ -68,6 +70,7 @@ var keywords = map[string]tokenType{
 	keywordInsert: tokenInsert,
 	keywordInto:   tokenInto,
 	keywordValues: tokenValues,
+	keywordDelete: tokenDelete,
 }
 
 const end = -1
