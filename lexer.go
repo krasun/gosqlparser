@@ -28,56 +28,71 @@ type token struct {
 type tokenType int
 
 const (
-	tokenError      tokenType = iota
-	tokenSpace                // whitespace
-	tokenIdentifier           // table or column name
-	tokenEnd                  // the end of the input
-	tokenEquals               // "=="
-	tokenAssign               // "="
-	tokenDelimeter            // ','
-	tokenLeftPar              // '('
-	tokenRightPar             // ')'
-	tokenInteger              // integer
-	tokenString               // string including quotes
-	tokenAnd                  // AND
-	tokenInsert               // INSERT
-	tokenInto                 // INTO
-	tokenSelect               // SELECT
-	tokenDelete               // DELETE
-	tokenFrom                 // FROM
-	tokenWhere                // WHERE
-	tokenLimit                // LIMIT
-	tokenValues               // VALUES
-	tokenUpdate               // UPDATE
-	tokenSet                  // SET
+	tokenError       tokenType = iota
+	tokenSpace                 // whitespace
+	tokenIdentifier            // table or column name
+	tokenEnd                   // the end of the input
+	tokenEquals                // "=="
+	tokenAssign                // "="
+	tokenDelimeter             // ','
+	tokenLeftPar               // '('
+	tokenRightPar              // ')'
+	tokenInteger               // integer
+	tokenString                // string including quotes
+	tokenAnd                   // AND
+	tokenInsert                // INSERT
+	tokenInto                  // INTO
+	tokenSelect                // SELECT
+	tokenDelete                // DELETE
+	tokenFrom                  // FROM
+	tokenWhere                 // WHERE
+	tokenLimit                 // LIMIT
+	tokenValues                // VALUES
+	tokenUpdate                // UPDATE
+	tokenSet                   // SET
+	tokenCreate                // CREATE
+	tokenDrop                  // DROP
+	tokenTable                 // TABLE
+	tokenTypeInteger           // INTEGER
+	tokenTypeString            // STRING
 )
 
 const (
-	keywordSelect = "SELECT"
-	keywordInsert = "INSERT"
-	keywordDelete = "DELETE"
-	keywordInto   = "INTO"
-	keywordFrom   = "FROM"
-	keywordWhere  = "WHERE"
-	keywordLimit  = "LIMIT"
-	keywordAnd    = "AND"
-	keywordValues = "VALUES"
-	keywordUpdate = "UPDATE"
-	keywordSet    = "SET"
+	keywordSelect  = "SELECT"
+	keywordInsert  = "INSERT"
+	keywordDelete  = "DELETE"
+	keywordInto    = "INTO"
+	keywordFrom    = "FROM"
+	keywordWhere   = "WHERE"
+	keywordLimit   = "LIMIT"
+	keywordAnd     = "AND"
+	keywordValues  = "VALUES"
+	keywordUpdate  = "UPDATE"
+	keywordSet     = "SET"
+	keywordInteger = "INTEGER"
+	keywordString  = "STRING"
+	keywordCreate  = "CREATE"
+	keywordDrop    = "DROP"
+	keywordTable   = "TABLE"
 )
 
 var keywords = map[string]tokenType{
-	keywordSelect: tokenSelect,
-	keywordFrom:   tokenFrom,
-	keywordWhere:  tokenWhere,
-	keywordLimit:  tokenLimit,
-	keywordAnd:    tokenAnd,
-	keywordInsert: tokenInsert,
-	keywordInto:   tokenInto,
-	keywordValues: tokenValues,
-	keywordDelete: tokenDelete,
-	keywordUpdate: tokenUpdate,
-	keywordSet:    tokenSet,
+	keywordSelect:  tokenSelect,
+	keywordFrom:    tokenFrom,
+	keywordWhere:   tokenWhere,
+	keywordLimit:   tokenLimit,
+	keywordAnd:     tokenAnd,
+	keywordInsert:  tokenInsert,
+	keywordInto:    tokenInto,
+	keywordValues:  tokenValues,
+	keywordDelete:  tokenDelete,
+	keywordUpdate:  tokenUpdate,
+	keywordSet:     tokenSet,
+	keywordString:  tokenTypeString,
+	keywordInteger: tokenTypeInteger,
+	keywordCreate:  tokenCreate,
+	keywordTable:   tokenTable,
+	keywordDrop:    tokenDrop,
 }
 
 const end = -1
