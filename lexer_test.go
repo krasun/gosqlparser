@@ -128,7 +128,7 @@ func TestLexer(t *testing.T) {
 				{tokenSpace, " "},
 				{tokenIdentifier, "table1"},
 				{tokenSpace, " "},
-				{tokenLeftPar, "("},
+				{tokenLeftParenthesis, "("},
 				{tokenIdentifier, "c1"},
 				{tokenDelimeter, ","},
 				{tokenSpace, " "},
@@ -136,11 +136,11 @@ func TestLexer(t *testing.T) {
 				{tokenDelimeter, ","},
 				{tokenSpace, " "},
 				{tokenIdentifier, "c3"},
-				{tokenRightPar, ")"},
+				{tokenRightParenthesis, ")"},
 				{tokenSpace, " "},
 				{tokenValues, "VALUES"},
 				{tokenSpace, " "},
-				{tokenLeftPar, "("},
+				{tokenLeftParenthesis, "("},
 				{tokenInteger, "5"},
 				{tokenDelimeter, ","},
 				{tokenSpace, " "},
@@ -148,7 +148,7 @@ func TestLexer(t *testing.T) {
 				{tokenDelimeter, ","},
 				{tokenSpace, " "},
 				{tokenInteger, "10"},
-				{tokenRightPar, ")"},
+				{tokenRightParenthesis, ")"},
 				{tokenEnd, ""},
 			},
 		},
@@ -224,7 +224,7 @@ func TestLexer(t *testing.T) {
 				{tokenSpace, " "},
 				{tokenIdentifier, "table1"},
 				{tokenSpace, " "},
-				{tokenLeftPar, "("},
+				{tokenLeftParenthesis, "("},
 				{tokenIdentifier, "c1"},
 				{tokenSpace, " "},
 				{tokenTypeInteger, "INTEGER"},
@@ -233,7 +233,7 @@ func TestLexer(t *testing.T) {
 				{tokenIdentifier, "c2"},
 				{tokenSpace, " "},
 				{tokenTypeString, "STRING"},
-				{tokenRightPar, ")"},
+				{tokenRightParenthesis, ")"},
 				{tokenEnd, ""},
 			},
 		},
@@ -263,11 +263,12 @@ func TestLexer(t *testing.T) {
 }
 
 func tokenize(input string) []token {
-	tokens := lex(input)
+	l := newLexer(input)
+	go l.run()
 
 	all := make([]token, 0)
 	for {
-		t, ok := <-tokens
+		t, ok := <-l.tokens
 		if !ok {
 			break
 		}

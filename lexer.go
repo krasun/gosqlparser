@@ -21,41 +21,102 @@ type lexer struct {
 // token is an entity produced by tokenizer for parser that represents a smaller typed piece
 // of input string.
 type token struct {
-	t     tokenType
-	value string
+	tokenType tokenType
+	value     string
 }
 
 type tokenType int
 
 const (
-	tokenError       tokenType = iota
-	tokenSpace                 // whitespace
-	tokenIdentifier            // table or column name
-	tokenEnd                   // the end of the input
-	tokenEquals                // "=="
-	tokenAssign                // "="
-	tokenDelimeter             // ','
-	tokenLeftPar               // '('
-	tokenRightPar              // ')'
-	tokenInteger               // integer
-	tokenString                // string including quotes
-	tokenAnd                   // AND
-	tokenInsert                // INSERT
-	tokenInto                  // INTO
-	tokenSelect                // SELECT
-	tokenDelete                // DELETE
-	tokenFrom                  // FROM
-	tokenWhere                 // WHERE
-	tokenLimit                 // LIMIT
-	tokenValues                // VALUES
-	tokenUpdate                // UPDATE
-	tokenSet                   // SET
-	tokenCreate                // CREATE
-	tokenDrop                  // DROP
-	tokenTable                 // TABLE
-	tokenTypeInteger           // INTEGER
-	tokenTypeString            // STRING
+	tokenError            tokenType = iota
+	tokenSpace                      // whitespace
+	tokenIdentifier                 // table or column name
+	tokenEnd                        // the end of the input
+	tokenEquals                     // "=="
+	tokenAssign                     // "="
+	tokenDelimeter                  // ','
+	tokenLeftParenthesis            // '('
+	tokenRightParenthesis           // ')'
+	tokenInteger                    // integer
+	tokenString                     // string including quotes
+	tokenAnd                        // AND
+	tokenInsert                     // INSERT
+	tokenInto                       // INTO
+	tokenSelect                     // SELECT
+	tokenDelete                     // DELETE
+	tokenFrom                       // FROM
+	tokenWhere                      // WHERE
+	tokenLimit                      // LIMIT
+	tokenValues                     // VALUES
+	tokenUpdate                     // UPDATE
+	tokenSet                        // SET
+	tokenCreate                     // CREATE
+	tokenDrop                       // DROP
+	tokenTable                      // TABLE
+	tokenTypeInteger                // INTEGER
+	tokenTypeString                 // STRING
 )
+
+func (t tokenType) String() string {
+	switch t {
+	case tokenError:
+		return "error"
+	case tokenSpace:
+		return "space"
+	case tokenIdentifier:
+		return "identifier"
+	case tokenEnd:
+		return "end"
+	case tokenEquals:
+		return "equals"
+	case tokenAssign:
+		return "assign"
+	case tokenDelimeter:
+		return "delimeter"
+	case tokenLeftParenthesis:
+		return "leftParenthesis"
+	case tokenRightParenthesis:
+		return "rightParenthesis"
+	case tokenInteger:
+		return "integer"
+	case tokenString:
+		return "string"
+	case tokenAnd:
+		return "AND"
+	case tokenInsert:
+		return "INSERT"
+	case tokenInto:
+		return "INTO"
+	case tokenSelect:
+		return "SELECT"
+	case tokenDelete:
+		return "DELETE"
+	case tokenFrom:
+		return "FROM"
+	case tokenWhere:
+		return "WHERE"
+	case tokenLimit:
+		return "LIMIT"
+	case tokenValues:
+		return "VALUES"
+	case tokenUpdate:
+		return "UPDATE"
+	case tokenSet:
+		return "SET"
+	case tokenCreate:
+		return "CREATE"
+	case tokenDrop:
+		return "DROP"
+	case tokenTable:
+		return "TABLE"
+	case tokenTypeInteger:
+		return "typeInteger"
+	case tokenTypeString:
+		return "typeString"
+	}
+
+	return "unknown"
+}
 
 const (
 	keywordSelect  = "SELECT"
@@ -97,15 +158,7 @@ var keywords = map[string]tokenType{
 
 const end = -1
 
-type stateFunc func(*lexer) stateFunc
-
-func lex(input string) <-chan token {
-	l := newLexer(input)
-
-	go l.run()
-
-	return l.tokens
-}
+type lexFunc func(*lexer) lexFunc
 
 // newLexer returns an instance of the new lexer.
 func newLexer(input string) *lexer {
@@ -123,6 +176,11 @@ func (l *lexer) run() {
 	}
 
 	close(l.tokens)
+}
+
+// nextToken consumes token and returns the next token.
+func (l *lexer) nextToken() token {
+	return <-l.tokens
 }
 
 // produce sends the token.
@@ -157,7 +215,12 @@ func (l *lexer) peek() rune {
 	return r
 }
 
-func lexStatement(l *lexer) stateFunc {
+func (l *lexer) drain() {
+	for _ = range l.tokens {
+	}
+}
+
+func lexStatement(l *lexer) lexFunc {
 	r := l.next()
 
 	switch true {
@@ -170,10 +233,10 @@ func lexStatement(l *lexer) stateFunc {
 
 		return lexStatement
 	case r == '(':
-		l.produce(tokenLeftPar)
+		l.produce(tokenLeftParenthesis)
 		return lexStatement
 	case r == ')':
-		l.produce(tokenRightPar)
+		l.produce(tokenRightParenthesis)
 		return lexStatement
 	case r == '"':
 		return lexString
@@ -200,7 +263,7 @@ func lexStatement(l *lexer) stateFunc {
 }
 
 // lexInteger lexes an integer.
-func lexInteger(l *lexer) stateFunc {
+func lexInteger(l *lexer) lexFunc {
 	r := l.peek()
 	if unicode.IsDigit(r) {
 		l.next()
@@ -214,7 +277,7 @@ func lexInteger(l *lexer) stateFunc {
 }
 
 // lexString lexes a quoted string.
-func lexString(l *lexer) stateFunc {
+func lexString(l *lexer) lexFunc {
 	r := l.next()
 
 	switch r {
@@ -229,7 +292,7 @@ func lexString(l *lexer) stateFunc {
 	return lexString
 }
 
-func lexIdentifier(l *lexer) stateFunc {
+func lexIdentifier(l *lexer) lexFunc {
 	r := l.next()
 
 	if isAlphaNumeric(r) {
@@ -249,7 +312,7 @@ func lexIdentifier(l *lexer) stateFunc {
 	return lexStatement
 }
 
-func (l *lexer) errorf(format string, args ...interface{}) stateFunc {
+func (l *lexer) errorf(format string, args ...interface{}) lexFunc {
 	l.tokens <- token{tokenError, fmt.Sprintf(format, args...)}
 
 	return nil
