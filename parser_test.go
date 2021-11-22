@@ -37,6 +37,12 @@ func TestParser(t *testing.T) {
 			&Select{"table1", []string{"col1", "col2"}, nil, nil},
 			nil,
 		},
+		{
+			"simple DELETE FROM",
+			"DELETE FROM table1",
+			&Delete{"table1", nil},
+			nil,
+		},
 	}
 
 	for _, testCase := range testCases {

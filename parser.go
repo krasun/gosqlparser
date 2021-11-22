@@ -74,7 +74,7 @@ type Update struct {
 //		...
 type Delete struct {
 	Table string
-	Where Where
+	Where *Where
 }
 
 // CreateTable represents CREATE TABLE statement.
@@ -265,6 +265,23 @@ func parseUpdate(p *parser) parseFunc {
 
 // parseDelete parses DELETE statement.
 func parseDelete(p *parser) parseFunc {
+	t := p.next(true)
+	if t.tokenType == tokenError {
+		return p.errorf(t.value)
+	}
+
+	if t.tokenType != tokenFrom {
+		return p.errorf("expected %s, but got %s", tokenFrom, t.tokenType)
+	}
+
+	t = p.next(true)
+	if t.tokenType != tokenIdentifier {
+		return p.errorf("expected %s, but got %s", tokenIdentifier, t.tokenType)
+	}
+
+	d := p.asDelete()
+	d.Table = t.value
+
 	return nil
 }
 
