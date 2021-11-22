@@ -216,7 +216,7 @@ func (l *lexer) peek() rune {
 }
 
 func (l *lexer) drain() {
-	for _ = range l.tokens {
+	for range l.tokens {
 	}
 }
 

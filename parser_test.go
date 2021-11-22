@@ -29,7 +29,7 @@ func TestParser(t *testing.T) {
 			"broken DROP TABLE",
 			"DROP table1",
 			nil,
-			fmt.Errorf("expected TABLE, but got identifier: table1"),
+			fmt.Errorf("expected TABLE, but got identifier: \"table1\""),
 		},
 		{
 			"simple SELECT FROM",
