@@ -9,6 +9,16 @@ type parser struct {
 	err       error
 }
 
+// Parse parses the input and returns the statement object or an error.
+func Parse(input string) (Statement, error) {
+	p := &parser{newLexer(input), nil, nil}
+
+	go p.lexer.run()
+	p.run()
+
+	return p.statement, p.err
+}
+
 // ColumnType for predefined column types.
 type ColumnType int
 
@@ -94,8 +104,8 @@ type DropTable struct {
 type Select struct {
 	Table   string
 	Columns []string
-	Where   Where
-	Limit   int
+	Where   *Where
+	Limit   *int
 }
 
 // Where represent conditional expressions.
@@ -108,16 +118,6 @@ type Expr struct {
 }
 
 type parseFunc func(*parser) parseFunc
-
-// Parse parses the input and returns the statement object or an error.
-func Parse(input string) (Statement, error) {
-	p := &parser{newLexer(input), nil, nil}
-
-	go p.lexer.run()
-	p.run()
-
-	return p.statement, p.err
-}
 
 func (p *parser) run() {
 	for state := parseStatement; state != nil; {
@@ -216,19 +216,39 @@ func parseStatement(p *parser) parseFunc {
 
 // parseSelect initiates SELECT statement parsing
 func parseSelect(p *parser) parseFunc {
+	s := p.asSelect()
+
+	// parse columns
+	for {
+		t := p.next(true)
+		if t.tokenType == tokenError {
+			return p.errorf(t.value)
+		}
+
+		if t.tokenType == tokenIdentifier {
+			s.Columns = append(s.Columns, t.value)
+		} else {
+			return p.errorf("expected %s, but got %s", tokenIdentifier, t.tokenType)
+		}
+
+		t = p.next(true)
+		if t.tokenType == tokenFrom {
+			break
+		}
+
+		if t.tokenType != tokenDelimeter {
+			return p.errorf("expected %s, but got %s", tokenDelimeter, t.tokenType)
+		}
+	}
+
 	t := p.next(true)
-	if t.tokenType == tokenError {
-		return p.errorf(t.value)
+	if t.tokenType != tokenIdentifier {
+		return p.errorf("expected %s, but got %s", tokenIdentifier, t.tokenType)
 	}
 
-	if t.tokenType == tokenIdentifier {
-		s := p.asSelect()
-		s.Columns = append(s.Columns, t.value)
+	s.Table = t.value
 
-		// FIND DELIMITER
-	}
-
-	// TODO continue
+	// TODO continue with WHERE and LIMIT
 
 	return nil
 }

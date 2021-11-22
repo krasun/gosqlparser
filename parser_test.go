@@ -31,6 +31,12 @@ func TestParser(t *testing.T) {
 			nil,
 			fmt.Errorf("expected TABLE, but got identifier: table1"),
 		},
+		{
+			"simple SELECT FROM",
+			"SELECT col1, col2 FROM table1",
+			&Select{"table1", []string{"col1", "col2"}, nil, nil},
+			nil,
+		},
 	}
 
 	for _, testCase := range testCases {
