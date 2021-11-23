@@ -1,6 +1,9 @@
 package gosqlparser
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type parser struct {
 	lexer *lexer
@@ -75,6 +78,7 @@ type Update struct {
 type Delete struct {
 	Table string
 	Where *Where
+	Limit *int
 }
 
 // CreateTable represents CREATE TABLE statement.
@@ -148,17 +152,22 @@ func (p *parser) error(err error) parseFunc {
 	return nil
 }
 
-func (p *parser) scanFor(tokenType tokenType) (token, error) {
+func (p *parser) scanFor(tokenTypes ...tokenType) (token, error) {
 	t := p.next(true)
 	if t.tokenType == tokenError {
 		return token{}, fmt.Errorf(t.value)
 	}
 
-	if t.tokenType != tokenType {
-		return token{}, fmt.Errorf("expected %s, but got %s: \"%s\"", tokenType, t.tokenType, t.value)
+	expectedTokens := []string{}
+	for _, tokenType := range tokenTypes {
+		if tokenType == t.tokenType {
+			return t, nil
+		}
+
+		expectedTokens = append(expectedTokens, tokenType.String())
 	}
 
-	return t, nil
+	return token{}, fmt.Errorf("expected %s, but got %s: \"%s\"", strings.Join(expectedTokens, ", "), t.tokenType, t.value)
 }
 
 func (p *parser) statementReady(statement Statement) parseFunc {
@@ -235,39 +244,75 @@ func parseSelect(p *parser) parseFunc {
 
 // parseDelete parses INSERT statement.
 func parseInsert(p *parser) parseFunc {
-	t := p.next(true)
-	if t.tokenType == tokenError {
-		return p.errorf(t.value)
-	}
-
-	if t.tokenType == tokenInto {
-		// INTO is an optional keyword
-		t = p.next(true)
-	}
-
-	t, err := p.scanFor(tokenIdentifier)
+	t, err := p.scanFor(tokenIdentifier, tokenInto)
 	if err != nil {
 		return p.error(err)
 	}
 
-	i := &Insert{}
-	i.Table = t.value
+	if t.tokenType == tokenInto {
+		// INTO is an optional keyword
+		t, err = p.scanFor(tokenIdentifier)
+		if err != nil {
+			return p.error(err)
+		}
+	}
+
+	insert := &Insert{t.value, []string{}, []string{}}
 
 	_, err = p.scanFor(tokenLeftParenthesis)
 	if err != nil {
 		return p.error(err)
 	}
 
-	// SCAN columns
+	for {
+		t, err := p.scanFor(tokenIdentifier)
+		if err != nil {
+			return p.error(err)
+		}
 
-	// SCAN values
+		insert.Columns = append(insert.Columns, t.value)
+
+		t = p.next(true)
+		if t.tokenType == tokenRightParenthesis {
+			break
+		}
+
+		if t.tokenType != tokenDelimeter {
+			// TODO: handle error
+			return p.errorf("expected %s, but got %s", tokenDelimeter, t.tokenType)
+		}
+	}
 
 	t, err = p.scanFor(tokenValues)
 	if err != nil {
 		return p.error(err)
 	}
 
-	return p.statementReady(i)
+	t, err = p.scanFor(tokenLeftParenthesis)
+	if err != nil {
+		return p.error(err)
+	}
+
+	for {
+		t, err = p.scanFor(tokenInteger, tokenString)
+		if err != nil {
+			return p.error(err)
+		}
+
+		insert.Values = append(insert.Values, t.value)
+
+		t = p.next(true)
+		// TODO: handle error
+		if t.tokenType == tokenRightParenthesis || t.tokenType == end {
+			break
+		}
+
+		if t.tokenType != tokenDelimeter {
+			return p.errorf("expected %s, but got %s", tokenDelimeter, t.tokenType)
+		}
+	}
+
+	return p.statementReady(insert)
 }
 
 // parseDelete parses UPDATE statement.
@@ -287,14 +332,33 @@ func parseDelete(p *parser) parseFunc {
 		return p.error(err)
 	}
 
-	delete := &Delete{t.value, nil}
+	delete := &Delete{t.value, nil, nil}
 
 	return p.statementReady(delete)
 }
 
 // parseCreateTable parses CREATE TABLE statement.
 func parseCreateTable(p *parser) parseFunc {
-	return nil
+	t, err := p.scanFor(tokenTable)
+	if err != nil {
+		return p.error(err)
+	}
+
+	t, err = p.scanFor(tokenIdentifier)
+	if err != nil {
+		return p.error(err)
+	}
+
+	createTable := &CreateTable{t.value, []ColumnDefinition{}}
+
+	_, err = p.scanFor(tokenLeftParenthesis)
+	if err != nil {
+		return p.error(err)
+	}
+
+	// TODO: FINISH
+
+	return p.statementReady(createTable)
 }
 
 // parseDropTable parses DROP TABLE statement.
