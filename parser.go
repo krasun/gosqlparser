@@ -220,13 +220,13 @@ func parseSelect(p *parser) parseFunc {
 
 		s.Columns = append(s.Columns, t.value)
 
-		t = p.next(true)
-		if t.tokenType == tokenFrom {
-			break
+		t, err = p.scanFor(tokenFrom, tokenDelimeter)
+		if err != nil {
+			return p.error(err)
 		}
 
-		if t.tokenType != tokenDelimeter {
-			return p.errorf("expected %s, but got %s", tokenDelimeter, t.tokenType)
+		if t.tokenType == tokenFrom {
+			break
 		}
 	}
 
@@ -238,6 +238,11 @@ func parseSelect(p *parser) parseFunc {
 	s.Table = t.value
 
 	// TODO continue with WHERE and LIMIT
+
+	_, err = p.scanFor(tokenEnd)
+	if err != nil {
+		return p.error(err)
+	}
 
 	return p.statementReady(s)
 }
@@ -272,14 +277,13 @@ func parseInsert(p *parser) parseFunc {
 
 		insert.Columns = append(insert.Columns, t.value)
 
-		t = p.next(true)
-		if t.tokenType == tokenRightParenthesis {
-			break
+		t, err = p.scanFor(tokenDelimeter, tokenRightParenthesis)
+		if err != nil {
+			return p.error(err)
 		}
 
-		if t.tokenType != tokenDelimeter {
-			// TODO: handle error
-			return p.errorf("expected %s, but got %s", tokenDelimeter, t.tokenType)
+		if t.tokenType == tokenRightParenthesis {
+			break
 		}
 	}
 
@@ -301,14 +305,13 @@ func parseInsert(p *parser) parseFunc {
 
 		insert.Values = append(insert.Values, t.value)
 
-		t = p.next(true)
-		// TODO: handle error
-		if t.tokenType == tokenRightParenthesis || t.tokenType == end {
-			break
+		t, err = p.scanFor(tokenDelimeter, tokenRightParenthesis, end)
+		if err != nil {
+			return p.error(err)
 		}
 
-		if t.tokenType != tokenDelimeter {
-			return p.errorf("expected %s, but got %s", tokenDelimeter, t.tokenType)
+		if t.tokenType == tokenRightParenthesis {
+			break
 		}
 	}
 
@@ -334,6 +337,11 @@ func parseDelete(p *parser) parseFunc {
 
 	delete := &Delete{t.value, nil, nil}
 
+	_, err = p.scanFor(tokenEnd)
+	if err != nil {
+		return p.error(err)
+	}
+
 	return p.statementReady(delete)
 }
 
@@ -358,6 +366,11 @@ func parseCreateTable(p *parser) parseFunc {
 
 	// TODO: FINISH
 
+	_, err = p.scanFor(tokenEnd)
+	if err != nil {
+		return p.error(err)
+	}
+
 	return p.statementReady(createTable)
 }
 
@@ -374,6 +387,11 @@ func parseDropTable(p *parser) parseFunc {
 	}
 
 	dropTable := &DropTable{t.value}
+
+	_, err = p.scanFor(tokenEnd)
+	if err != nil {
+		return p.error(err)
+	}
 
 	return p.statementReady(dropTable)
 }
