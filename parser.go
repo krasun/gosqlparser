@@ -67,7 +67,7 @@ type Update struct {
 	Table   string
 	Columns []string
 	Values  []string
-	Where   Where
+	Where   *Where
 }
 
 // Delete represents DELETE query.
@@ -78,7 +78,6 @@ type Update struct {
 type Delete struct {
 	Table string
 	Where *Where
-	Limit *int
 }
 
 // CreateTable represents CREATE TABLE statement.
@@ -305,7 +304,7 @@ func parseInsert(p *parser) parseFunc {
 
 		insert.Values = append(insert.Values, t.value)
 
-		t, err = p.scanFor(tokenDelimeter, tokenRightParenthesis, end)
+		t, err = p.scanFor(tokenDelimeter, tokenRightParenthesis)
 		if err != nil {
 			return p.error(err)
 		}
@@ -315,12 +314,59 @@ func parseInsert(p *parser) parseFunc {
 		}
 	}
 
+	_, err = p.scanFor(tokenEnd)
+	if err != nil {
+		return p.error(err)
+	}
+
 	return p.statementReady(insert)
 }
 
 // parseDelete parses UPDATE statement.
 func parseUpdate(p *parser) parseFunc {
-	return nil
+	t, err := p.scanFor(tokenIdentifier)
+	if err != nil {
+		return p.error(err)
+	}
+
+	update := &Update{t.value, []string{}, []string{}, nil}
+
+	_, err = p.scanFor(tokenSet)
+	if err != nil {
+		return p.error(err)
+	}
+
+	for {
+		t, err := p.scanFor(tokenIdentifier)
+		if err != nil {
+			return p.error(err)
+		}
+
+		update.Columns = append(update.Columns, t.value)
+
+		t, err = p.scanFor(tokenAssign)
+		if err != nil {
+			return p.error(err)
+		}
+
+		t, err = p.scanFor(tokenString, tokenInteger)
+		if err != nil {
+			return p.error(err)
+		}
+
+		update.Values = append(update.Values, t.value)
+
+		t, err = p.scanFor(tokenDelimeter, tokenEnd)
+		if err != nil {
+			return p.error(err)
+		}
+
+		if t.tokenType == tokenEnd {
+			break
+		}
+	}
+
+	return p.statementReady(update)
 }
 
 // parseDelete parses DELETE statement.
@@ -335,7 +381,7 @@ func parseDelete(p *parser) parseFunc {
 		return p.error(err)
 	}
 
-	delete := &Delete{t.value, nil, nil}
+	delete := &Delete{t.value, nil}
 
 	_, err = p.scanFor(tokenEnd)
 	if err != nil {

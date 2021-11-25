@@ -40,13 +40,19 @@ func TestParser(t *testing.T) {
 		{
 			"simple DELETE FROM",
 			"DELETE FROM table1",
-			&Delete{"table1", nil, nil},
+			&Delete{"table1", nil},
 			nil,
 		},
 		{
 			"simple INSERT INTO",
 			"INSERT INTO table1 (col1, col2) VALUES (\"val1\", 25)",
 			&Insert{"table1", []string{"col1", "col2"}, []string{"\"val1\"", "25"}},
+			nil,
+		},
+		{
+			"simple UPDATE",
+			"UPDATE table1 SET col1 = \"val1\", col2 = 2",
+			&Update{"table1", []string{"col1", "col2"}, []string{"\"val1\"", "2"}, nil},
 			nil,
 		},
 
