@@ -34,7 +34,7 @@ func TestParser(t *testing.T) {
 		{
 			"simple SELECT FROM",
 			"SELECT col1, col2 FROM table1",
-			&Select{"table1", []string{"col1", "col2"}, nil, nil},
+			&Select{"table1", []string{"col1", "col2"}, nil, ""},
 			nil,
 		},
 		{
@@ -55,7 +55,12 @@ func TestParser(t *testing.T) {
 			&Update{"table1", []string{"col1", "col2"}, []string{"\"val1\"", "2"}, nil},
 			nil,
 		},
-
+		{
+			"SELECT FROM with LIMIT",
+			"SELECT col1, col2 FROM table1 LIMIT 10",
+			&Select{"table1", []string{"col1", "col2"}, nil, "10"},
+			nil,
+		},
 		// TODO test end token
 	}
 

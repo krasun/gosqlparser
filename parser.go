@@ -108,7 +108,7 @@ type Select struct {
 	Table   string
 	Columns []string
 	Where   *Where
-	Limit   *int
+	Limit   string
 }
 
 // Where represent conditional expressions.
@@ -238,9 +238,18 @@ func parseSelect(p *parser) parseFunc {
 
 	// TODO continue with WHERE and LIMIT
 
-	_, err = p.scanFor(tokenEnd)
+	t, err = p.scanFor(tokenLimit, tokenEnd)
 	if err != nil {
 		return p.error(err)
+	}
+
+	if t.tokenType == tokenLimit {
+		t, err = p.scanFor(tokenInteger)
+		if err != nil {
+			return p.error(err)
+		}
+		
+		s.Limit = t.value
 	}
 
 	return p.statementReady(s)
