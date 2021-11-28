@@ -20,6 +20,12 @@ func TestParser(t *testing.T) {
 			fmt.Errorf("expected SELECT, INSERT, UPDATE, DELETE, CREATE or DROP, but got identifier: table1"),
 		},
 		{
+			"full CREATE TABLE query",
+			"CREATE TABLE table1 (col1 INTEGER, col2 STRING)",
+			&CreateTable{"table1", []ColumnDefinition{{"col1", TypeInteger}, {"col2", TypeString}}},
+			nil,
+		},
+		{
 			"full DROP TABLE query",
 			"DROP TABLE table1",
 			&DropTable{"table1"},

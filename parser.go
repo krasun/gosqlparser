@@ -236,7 +236,7 @@ func parseSelect(p *parser) parseFunc {
 
 	s.Table = t.value
 
-	// TODO continue with WHERE and LIMIT
+	// TODO continue with WHERE
 
 	t, err = p.scanFor(tokenLimit, tokenEnd)
 	if err != nil {
@@ -248,7 +248,7 @@ func parseSelect(p *parser) parseFunc {
 		if err != nil {
 			return p.error(err)
 		}
-		
+
 		s.Limit = t.value
 	}
 
@@ -419,7 +419,38 @@ func parseCreateTable(p *parser) parseFunc {
 		return p.error(err)
 	}
 
-	// TODO: FINISH
+	for {
+		t, err := p.scanFor(tokenIdentifier)
+		if err != nil {
+			return p.error(err)
+		}
+
+		columnName := t.value
+
+		t, err = p.scanFor(tokenTypeInteger, tokenTypeString)
+		if err != nil {
+			return p.error(err)
+		}
+
+		var columnType ColumnType
+		switch t.tokenType {
+		case tokenTypeInteger:
+			columnType = TypeInteger
+		case tokenTypeString:
+			columnType = TypeString
+		}
+
+		createTable.Columns = append(createTable.Columns, ColumnDefinition{columnName, columnType})
+
+		t, err = p.scanFor(tokenDelimeter, tokenRightParenthesis)
+		if err != nil {
+			return p.error(err)
+		}
+
+		if t.tokenType == tokenRightParenthesis {
+			break
+		}
+	}
 
 	_, err = p.scanFor(tokenEnd)
 	if err != nil {
