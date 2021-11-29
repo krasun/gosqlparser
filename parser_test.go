@@ -20,6 +20,12 @@ func TestParser(t *testing.T) {
 			fmt.Errorf("expected SELECT, INSERT, UPDATE, DELETE, CREATE or DROP, but got identifier: table1"),
 		},
 		{
+			"unfinished SELECT statement",
+			"SELECT table1",
+			nil,
+			fmt.Errorf("expected FROM, delimeter, but got end: \"\""),
+		},
+		{
 			"full CREATE TABLE query",
 			"CREATE TABLE table1 (col1 INTEGER, col2 STRING)",
 			&CreateTable{"table1", []ColumnDefinition{{"col1", TypeInteger}, {"col2", TypeString}}},
@@ -68,6 +74,7 @@ func TestParser(t *testing.T) {
 			nil,
 		},
 		// TODO test end token
+		// TODO test broken queries
 	}
 
 	for _, testCase := range testCases {
