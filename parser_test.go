@@ -26,6 +26,12 @@ func TestParser(t *testing.T) {
 			fmt.Errorf("expected FROM, delimeter, but got end: \"\""),
 		},
 		{
+			"unfinished SELECT FROM statement",
+			"SELECT table1 FROM",
+			nil,
+			fmt.Errorf("expected identifier, but got end: \"\""),
+		},
+		{
 			"full CREATE TABLE query",
 			"CREATE TABLE table1 (col1 INTEGER, col2 STRING)",
 			&CreateTable{"table1", []ColumnDefinition{{"col1", TypeInteger}, {"col2", TypeString}}},
