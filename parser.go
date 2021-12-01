@@ -28,7 +28,7 @@ type ColumnType int
 const (
 	// TypeInteger is an integer type of the column.
 	TypeInteger ColumnType = iota
-	// TypeInteger is a string type of the column.
+	// TypeString is a string type of the column.
 	TypeString
 )
 
