@@ -300,29 +300,16 @@ func parseInsert(p *parser) parseFunc {
 		}
 	}
 
-	i := &Insert{t.value, []string{}, []string{}}
+	i := &Insert{t.value, nil, nil}
 
 	_, err = p.scanFor(tokenLeftParenthesis)
 	if err != nil {
 		return p.error(err)
 	}
 
-	for {
-		t, err := p.scanFor(tokenIdentifier)
-		if err != nil {
-			return p.error(err)
-		}
-
-		i.Columns = append(i.Columns, t.value)
-
-		t, err = p.scanFor(tokenDelimeter, tokenRightParenthesis)
-		if err != nil {
-			return p.error(err)
-		}
-
-		if t.tokenType == tokenRightParenthesis {
-			break
-		}
+	i.Columns, err = p.parseInsertValues(tokenIdentifier)
+	if err != nil {
+		return p.error(err)
 	}
 
 	t, err = p.scanFor(tokenValues)
@@ -335,22 +322,9 @@ func parseInsert(p *parser) parseFunc {
 		return p.error(err)
 	}
 
-	for {
-		t, err = p.scanFor(tokenInteger, tokenString)
-		if err != nil {
-			return p.error(err)
-		}
-
-		i.Values = append(i.Values, t.value)
-
-		t, err = p.scanFor(tokenDelimeter, tokenRightParenthesis)
-		if err != nil {
-			return p.error(err)
-		}
-
-		if t.tokenType == tokenRightParenthesis {
-			break
-		}
+	i.Values, err = p.parseInsertValues(tokenInteger, tokenString)
+	if err != nil {
+		return p.error(err)
 	}
 
 	_, err = p.scanFor(tokenEnd)
@@ -359,6 +333,29 @@ func parseInsert(p *parser) parseFunc {
 	}
 
 	return p.statementReady(i)
+}
+
+func (p *parser) parseInsertValues(tokenTypes ...tokenType) ([]string, error) {
+	values := make([]string, 0)
+	for {
+		t, err := p.scanFor(tokenTypes...)
+		if err != nil {
+			return nil, err
+		}
+
+		values = append(values, t.value)
+
+		t, err = p.scanFor(tokenDelimeter, tokenRightParenthesis)
+		if err != nil {
+			return nil, err
+		}
+
+		if t.tokenType == tokenRightParenthesis {
+			break
+		}
+	}
+
+	return values, nil
 }
 
 // parseUpdate parses UPDATE statement.
