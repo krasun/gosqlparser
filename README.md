@@ -17,7 +17,35 @@ go get github.com/krasun/gosqlparser
 
 ## Usage 
 
-... 
+```go
+package gosqlparser_test
+
+import (
+	"fmt"
+
+	"encoding/json"
+
+	sql "github.com/krasun/gosqlparser"
+)
+
+func Example() {
+	query, err := sql.Parse("SELECT col1, col2 FROM table1 WHERE col1 == \"abc\" AND col3 == 5 LIMIT 10")
+	if err != nil {
+		fmt.Printf("unexpected error: %s", err)
+		return
+	}
+
+	json, err := json.Marshal(query)
+	if err != nil {
+		fmt.Printf("unexpected error: %s", err)
+		return
+	}
+
+	fmt.Println(string(json))
+	// Output:
+	// {"Table":"table1","Columns":["col1","col2"],"Where":{"Expr":{"Left":{"Left":{"Name":"col1"},"Operator":0,"Right":{"Value":"\"abc\""}},"Operator":1,"Right":{"Left":{"Name":"col3"},"Operator":0,"Right":{"Value":"5"}}}},"Limit":"10"}
+}
+```
 
 ## Supported Statements
 

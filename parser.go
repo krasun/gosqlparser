@@ -272,15 +272,17 @@ func parseSelect(p *parser) parseFunc {
 		return p.error(err)
 	}
 
-	switch t.tokenType {
-	case tokenWhere:
-		expr, err := parseExpression(p)
+	if t.tokenType == tokenWhere {
+		expr, nextToken, err := parseExprOperation(p, tokenLimit, tokenEnd)
 		if err != nil {
 			return p.error(err)
 		}
 
 		s.Where = &Where{expr}
-	case tokenLimit:
+		t = *nextToken
+	}
+
+	if t.tokenType == tokenLimit {
 		t, err = p.scanFor(tokenInteger)
 		if err != nil {
 			return p.error(err)
@@ -292,7 +294,7 @@ func parseSelect(p *parser) parseFunc {
 	return p.statementReady(s)
 }
 
-// parseDelete parses INSERT statement.
+// parseInsert parses INSERT statement.
 func parseInsert(p *parser) parseFunc {
 	t, err := p.scanFor(tokenIdentifier, tokenInto)
 	if err != nil {
@@ -307,7 +309,7 @@ func parseInsert(p *parser) parseFunc {
 		}
 	}
 
-	insert := &Insert{t.value, []string{}, []string{}}
+	i := &Insert{t.value, []string{}, []string{}}
 
 	_, err = p.scanFor(tokenLeftParenthesis)
 	if err != nil {
@@ -320,7 +322,7 @@ func parseInsert(p *parser) parseFunc {
 			return p.error(err)
 		}
 
-		insert.Columns = append(insert.Columns, t.value)
+		i.Columns = append(i.Columns, t.value)
 
 		t, err = p.scanFor(tokenDelimeter, tokenRightParenthesis)
 		if err != nil {
@@ -348,7 +350,7 @@ func parseInsert(p *parser) parseFunc {
 			return p.error(err)
 		}
 
-		insert.Values = append(insert.Values, t.value)
+		i.Values = append(i.Values, t.value)
 
 		t, err = p.scanFor(tokenDelimeter, tokenRightParenthesis)
 		if err != nil {
@@ -365,17 +367,17 @@ func parseInsert(p *parser) parseFunc {
 		return p.error(err)
 	}
 
-	return p.statementReady(insert)
+	return p.statementReady(i)
 }
 
-// parseDelete parses UPDATE statement.
+// parseUpdate parses UPDATE statement.
 func parseUpdate(p *parser) parseFunc {
 	t, err := p.scanFor(tokenIdentifier)
 	if err != nil {
 		return p.error(err)
 	}
 
-	update := &Update{t.value, []string{}, []string{}, nil}
+	u := &Update{t.value, []string{}, []string{}, nil}
 
 	_, err = p.scanFor(tokenSet)
 	if err != nil {
@@ -383,12 +385,12 @@ func parseUpdate(p *parser) parseFunc {
 	}
 
 	for {
-		t, err := p.scanFor(tokenIdentifier)
+		t, err = p.scanFor(tokenIdentifier)
 		if err != nil {
 			return p.error(err)
 		}
 
-		update.Columns = append(update.Columns, t.value)
+		u.Columns = append(u.Columns, t.value)
 
 		t, err = p.scanFor(tokenAssign)
 		if err != nil {
@@ -400,19 +402,29 @@ func parseUpdate(p *parser) parseFunc {
 			return p.error(err)
 		}
 
-		update.Values = append(update.Values, t.value)
+		u.Values = append(u.Values, t.value)
 
-		t, err = p.scanFor(tokenDelimeter, tokenEnd)
+		t, err = p.scanFor(tokenDelimeter, tokenWhere, tokenEnd)
 		if err != nil {
 			return p.error(err)
 		}
 
-		if t.tokenType == tokenEnd {
+		if t.tokenType == tokenEnd || t.tokenType == tokenWhere {
 			break
 		}
 	}
 
-	return p.statementReady(update)
+	if t.tokenType == tokenWhere {
+		expr, nextToken, err := parseExprOperation(p, tokenLimit, tokenEnd)
+		if err != nil {
+			return p.error(err)
+		}
+
+		u.Where = &Where{expr}
+		t = *nextToken
+	}
+
+	return p.statementReady(u)
 }
 
 // parseDelete parses DELETE statement.
@@ -427,14 +439,24 @@ func parseDelete(p *parser) parseFunc {
 		return p.error(err)
 	}
 
-	delete := &Delete{t.value, nil}
+	d := &Delete{t.value, nil}
 
-	_, err = p.scanFor(tokenEnd)
+	t, err = p.scanFor(tokenWhere, tokenEnd)
 	if err != nil {
 		return p.error(err)
 	}
 
-	return p.statementReady(delete)
+	if t.tokenType == tokenWhere {
+		expr, nextToken, err := parseExprOperation(p, tokenLimit, tokenEnd)
+		if err != nil {
+			return p.error(err)
+		}
+
+		d.Where = &Where{expr}
+		t = *nextToken
+	}
+
+	return p.statementReady(d)
 }
 
 // parseCreateTable parses CREATE TABLE statement.
@@ -519,10 +541,10 @@ func parseDropTable(p *parser) parseFunc {
 	return p.statementReady(dropTable)
 }
 
-func parseExpression(p *parser) (Expr, error) {
+func parseExprOperation(p *parser, terminalTokenTypes ...tokenType) (Expr, *token, error) {
 	t, err := p.scanFor(tokenLeftParenthesis, tokenIdentifier, tokenTypeInteger, tokenTypeString)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var left Expr
@@ -537,7 +559,7 @@ func parseExpression(p *parser) (Expr, error) {
 
 	t, err = p.scanFor(tokenEquals)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var operator Operator
@@ -546,22 +568,41 @@ func parseExpression(p *parser) (Expr, error) {
 		operator = OperatorEquals
 	}
 
-	t, err = p.scanFor(tokenIdentifier, tokenTypeInteger, tokenTypeString)
+	t, err = p.scanFor(tokenIdentifier, tokenInteger, tokenString)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var right Expr
 	switch t.tokenType {
 	case tokenIdentifier:
 		right = ExprIdentifier{t.value}
-	case tokenTypeInteger:
+	case tokenInteger:
 		right = ExprValueInteger{t.value}
-	case tokenTypeString:
+	case tokenString:
 		right = ExprValueString{t.value}
 	}
 
 	var expr = ExprOperation{left, operator, right}
 
-	return expr, nil
+	expected := make([]tokenType, len(terminalTokenTypes))
+	copy(expected, terminalTokenTypes)
+	expected = append(expected, tokenAnd)
+
+	t, err = p.scanFor(expected...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	switch t.tokenType {
+	case tokenAnd:
+		right, t, err := parseExprOperation(p, terminalTokenTypes...)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return ExprOperation{expr, OperatorLogicalAnd, right}, t, nil
+	}
+
+	return expr, &t, nil
 }
