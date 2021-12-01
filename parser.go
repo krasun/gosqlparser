@@ -30,18 +30,25 @@ const (
 	TypeString
 )
 
+type Operator int
+
+const (
+	OperatorEquals Operator = iota
+	OperatorLogicalAnd
+)
+
 // Statement represents parsed SQL statement. Can be one of
 // Select, Insert, Update, Delete, CreateTable or DropTable.
 type Statement interface {
 	i()
 }
 
-func (s *Select) i()      {}
-func (s *Insert) i()      {}
-func (s *Update) i()      {}
-func (s *Delete) i()      {}
-func (s *CreateTable) i() {}
-func (s *DropTable) i()   {}
+func (*Select) i()      {}
+func (*Insert) i()      {}
+func (*Update) i()      {}
+func (*Delete) i()      {}
+func (*CreateTable) i() {}
+func (*DropTable) i()   {}
 
 // Insert represents INSERT query.
 //
@@ -117,7 +124,31 @@ type Where struct {
 }
 
 // Expr represents expression that can be used in WHERE statement.
-type Expr struct {
+type Expr interface {
+	i()
+}
+
+func (ExprIdentifier) i()   {}
+func (ExprValueInteger) i() {}
+func (ExprValueString) i()  {}
+func (ExprOperation) i()    {}
+
+type ExprIdentifier struct {
+	Name string
+}
+
+type ExprValueInteger struct {
+	Value string
+}
+
+type ExprValueString struct {
+	Value string
+}
+
+type ExprOperation struct {
+	Left     Expr
+	Operator Operator
+	Right    Expr
 }
 
 type parseFunc func(*parser) parseFunc
@@ -236,14 +267,20 @@ func parseSelect(p *parser) parseFunc {
 
 	s.Table = t.value
 
-	// TODO continue with WHERE
-
-	t, err = p.scanFor(tokenLimit, tokenEnd)
+	t, err = p.scanFor(tokenWhere, tokenLimit, tokenEnd)
 	if err != nil {
 		return p.error(err)
 	}
 
-	if t.tokenType == tokenLimit {
+	switch t.tokenType {
+	case tokenWhere:
+		expr, err := parseExpression(p)
+		if err != nil {
+			return p.error(err)
+		}
+
+		s.Where = &Where{expr}
+	case tokenLimit:
 		t, err = p.scanFor(tokenInteger)
 		if err != nil {
 			return p.error(err)
@@ -480,4 +517,51 @@ func parseDropTable(p *parser) parseFunc {
 	}
 
 	return p.statementReady(dropTable)
+}
+
+func parseExpression(p *parser) (Expr, error) {
+	t, err := p.scanFor(tokenLeftParenthesis, tokenIdentifier, tokenTypeInteger, tokenTypeString)
+	if err != nil {
+		return nil, err
+	}
+
+	var left Expr
+	switch t.tokenType {
+	case tokenIdentifier:
+		left = ExprIdentifier{t.value}
+	case tokenTypeInteger:
+		left = ExprValueInteger{t.value}
+	case tokenTypeString:
+		left = ExprValueString{t.value}
+	}
+
+	t, err = p.scanFor(tokenEquals)
+	if err != nil {
+		return nil, err
+	}
+
+	var operator Operator
+	switch t.tokenType {
+	case tokenEquals:
+		operator = OperatorEquals
+	}
+
+	t, err = p.scanFor(tokenIdentifier, tokenTypeInteger, tokenTypeString)
+	if err != nil {
+		return nil, err
+	}
+
+	var right Expr
+	switch t.tokenType {
+	case tokenIdentifier:
+		right = ExprIdentifier{t.value}
+	case tokenTypeInteger:
+		right = ExprValueInteger{t.value}
+	case tokenTypeString:
+		right = ExprValueString{t.value}
+	}
+
+	var expr = ExprOperation{left, operator, right}
+
+	return expr, nil
 }

@@ -79,8 +79,12 @@ func TestParser(t *testing.T) {
 			&Select{"table1", []string{"col1", "col2"}, nil, "10"},
 			nil,
 		},
-		// TODO test end token
-		// TODO test broken queries
+		{
+			"SELECT FROM with simple WHERE",
+			"SELECT col1, col2 FROM table1 WHERE col1 == col2",
+			&Select{"table1", []string{"col1", "col2"}, &Where{ExprOperation{ExprIdentifier{"col1"}, OperatorEquals, ExprIdentifier{"col2"}}}, ""},
+			nil,
+		},
 	}
 
 	for _, testCase := range testCases {
