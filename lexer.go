@@ -57,62 +57,40 @@ const (
 	tokenTypeString                 // STRING
 )
 
+var tokenToString = map[tokenType]string{
+	tokenError:            "error",
+	tokenSpace:            "space",
+	tokenIdentifier:       "identifier",
+	tokenEnd:              "end",
+	tokenEquals:           "equals",
+	tokenAssign:           "assign",
+	tokenDelimeter:        "delimeter",
+	tokenLeftParenthesis:  "leftParenthesis",
+	tokenRightParenthesis: "rightParenthesis",
+	tokenInteger:          "integer",
+	tokenString:           "string",
+	tokenAnd:              "AND",
+	tokenInsert:           "INSERT",
+	tokenInto:             "INTO",
+	tokenSelect:           "SELECT",
+	tokenDelete:           "DELETE",
+	tokenFrom:             "FROM",
+	tokenWhere:            "WHERE",
+	tokenLimit:            "LIMIT",
+	tokenValues:           "VALUES",
+	tokenUpdate:           "UPDATE",
+	tokenSet:              "SET",
+	tokenCreate:           "CREATE",
+	tokenDrop:             "DROP",
+	tokenTable:            "TABLE",
+	tokenTypeInteger:      "typeInteger",
+	tokenTypeString:       "typeString",
+}
+
 func (t tokenType) String() string {
-	switch t {
-	case tokenError:
-		return "error"
-	case tokenSpace:
-		return "space"
-	case tokenIdentifier:
-		return "identifier"
-	case tokenEnd:
-		return "end"
-	case tokenEquals:
-		return "equals"
-	case tokenAssign:
-		return "assign"
-	case tokenDelimeter:
-		return "delimeter"
-	case tokenLeftParenthesis:
-		return "leftParenthesis"
-	case tokenRightParenthesis:
-		return "rightParenthesis"
-	case tokenInteger:
-		return "integer"
-	case tokenString:
-		return "string"
-	case tokenAnd:
-		return "AND"
-	case tokenInsert:
-		return "INSERT"
-	case tokenInto:
-		return "INTO"
-	case tokenSelect:
-		return "SELECT"
-	case tokenDelete:
-		return "DELETE"
-	case tokenFrom:
-		return "FROM"
-	case tokenWhere:
-		return "WHERE"
-	case tokenLimit:
-		return "LIMIT"
-	case tokenValues:
-		return "VALUES"
-	case tokenUpdate:
-		return "UPDATE"
-	case tokenSet:
-		return "SET"
-	case tokenCreate:
-		return "CREATE"
-	case tokenDrop:
-		return "DROP"
-	case tokenTable:
-		return "TABLE"
-	case tokenTypeInteger:
-		return "typeInteger"
-	case tokenTypeString:
-		return "typeString"
+	s, defined := tokenToString[t]
+	if defined {
+		return s
 	}
 
 	return "unknown"

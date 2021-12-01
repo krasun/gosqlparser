@@ -26,14 +26,19 @@ func Parse(input string) (Statement, error) {
 type ColumnType int
 
 const (
+	// TypeInteger is an integer type of the column.
 	TypeInteger ColumnType = iota
+	// TypeInteger is a string type of the column.
 	TypeString
 )
 
+// Operator for prefined operator types.
 type Operator int
 
 const (
+	// OperatorEquals represents "=="
 	OperatorEquals Operator = iota
+	// OperatorLogicalAnd represents "AND"
 	OperatorLogicalAnd
 )
 
@@ -51,10 +56,6 @@ func (*CreateTable) i() {}
 func (*DropTable) i()   {}
 
 // Insert represents INSERT query.
-//
-//	INSERT [INTO] Table
-//		(Columns[0], Columns[1], ...Columns[n])
-//		VALUES (Values[0], Values[1], ...Values[n])
 type Insert struct {
 	Table   string
 	Columns []string
@@ -62,14 +63,6 @@ type Insert struct {
 }
 
 // Update represents UPDATE query.
-//
-//	UPDATE Table
-//	SET
-//		Columns[0] = Values[0],
-//		Columns[1] = Values[1],
-//		Columns[n] = Values[n]
-//	WHERE
-//		...
 type Update struct {
 	Table   string
 	Columns []string
@@ -88,29 +81,23 @@ type Delete struct {
 }
 
 // CreateTable represents CREATE TABLE statement.
-//
-//
 type CreateTable struct {
 	Name    string
 	Columns []ColumnDefinition
 }
 
-// ColumnDefinition
+// ColumnDefinition represents the column definition for CREATE TABLE query.
 type ColumnDefinition struct {
 	Name string
 	Type ColumnType
 }
 
-// CreateTable represents DROP TABLE statement.
-//
-// 	DROP TABLE Table
+// DropTable represents DROP TABLE statement.
 type DropTable struct {
 	Table string
 }
 
 // Select represents parsed SELECT SQL statement.
-//
-//
 type Select struct {
 	Table   string
 	Columns []string
@@ -133,18 +120,22 @@ func (ExprValueInteger) i() {}
 func (ExprValueString) i()  {}
 func (ExprOperation) i()    {}
 
+// ExprIdentifier holds the name of the identifier.
 type ExprIdentifier struct {
 	Name string
 }
 
+// ExprValueInteger holds the integer value.
 type ExprValueInteger struct {
 	Value string
 }
 
+// ExprValueString holds the string value.
 type ExprValueString struct {
 	Value string
 }
 
+// ExprOperation represents operation with == or AND operators.
 type ExprOperation struct {
 	Left     Expr
 	Operator Operator
