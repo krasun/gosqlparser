@@ -42,6 +42,12 @@ func TestParser(t *testing.T) {
 			fmt.Errorf("expected SELECT, INSERT, UPDATE, DELETE, CREATE or DROP, but got identifier: table1"),
 		},
 		{
+			"broken statement",
+			"`",
+			nil,
+			fmt.Errorf("unexpected rune"),
+		},
+		{
 			"unfinished SELECT statement",
 			"SELECT table1",
 			nil,
@@ -49,7 +55,43 @@ func TestParser(t *testing.T) {
 		},
 		{
 			"unfinished SELECT FROM statement",
-			"SELECT table1 FROM",
+			"SELECT col1 FROM",
+			nil,
+			fmt.Errorf("expected identifier, but got end: \"\""),
+		},
+		{
+			"unfinished SELECT FROM WHERE statement",
+			"SELECT col FROM table1 WHERE",
+			nil,
+			fmt.Errorf("expected identifier, integer, string, but got end: \"\""),
+		},
+		{
+			"unfinished WHERE statement",
+			"SELECT col FROM table1 WHERE a ==",
+			nil,
+			fmt.Errorf("expected identifier, integer, string, but got end: \"\""),
+		},
+		{
+			"unfinished WHERE statement",
+			"SELECT col FROM table1 WHERE a",
+			nil,
+			fmt.Errorf("expected equals, but got end: \"\""),
+		},
+		{
+			"unfinished WHERE statement",
+			"SELECT col FROM table1 LIMIT",
+			nil,
+			fmt.Errorf("expected integer, but got end: \"\""),
+		},
+		{
+			"broken SELECT statement",
+			"SELECT col, FROM table1 LIMIT",
+			nil,
+			fmt.Errorf("expected identifier, but got FROM: \"FROM\""),
+		},
+		{
+			"unfinished DELETE FROM statement",
+			"DELETE FROM",
 			nil,
 			fmt.Errorf("expected identifier, but got end: \"\""),
 		},

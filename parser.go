@@ -530,7 +530,7 @@ func parseDropTable(p *parser) parseFunc {
 }
 
 func parseExprOperation(p *parser, terminalTokenTypes ...tokenType) (Expr, *token, error) {
-	t, err := p.scanFor(tokenLeftParenthesis, tokenIdentifier, tokenTypeInteger, tokenTypeString)
+	t, err := p.scanFor(tokenIdentifier, tokenInteger, tokenString)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -539,9 +539,9 @@ func parseExprOperation(p *parser, terminalTokenTypes ...tokenType) (Expr, *toke
 	switch t.tokenType {
 	case tokenIdentifier:
 		left = ExprIdentifier{t.value}
-	case tokenTypeInteger:
+	case tokenInteger:
 		left = ExprValueInteger{t.value}
-	case tokenTypeString:
+	case tokenString:
 		left = ExprValueString{t.value}
 	}
 
