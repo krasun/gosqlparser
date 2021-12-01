@@ -7,6 +7,11 @@
 
 `gosqlparser` is a simple SQL parser.
 
+Use cases: 
+- as part of the database engine; 
+- as part of an application API instead of RPC or REST; 
+- to query data from CSV and other table-like files.
+
 ## Installation
 
 As simple as:
