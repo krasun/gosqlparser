@@ -42,18 +42,35 @@ const (
 	OperatorLogicalAnd
 )
 
+type StatementType int
+
+const (
+	// StatementSelect for SELECT query
+	StatementSelect StatementType = iota
+	// StatementUpdate for UPDATE query
+	StatementUpdate
+	// StatementInsert for INSERT query
+	StatementInsert
+	// StatementDelete for DELETE query
+	StatementDelete
+	// StatementCreateTable for CREATE TABLE query
+	StatementCreateTable
+	// StatementDropTable for DROP TABLE query
+	StatementDropTable
+)
+
 // Statement represents parsed SQL statement. Can be one of
 // Select, Insert, Update, Delete, CreateTable or DropTable.
 type Statement interface {
-	i()
+	GetType() StatementType
 }
 
-func (*Select) i()      {}
-func (*Insert) i()      {}
-func (*Update) i()      {}
-func (*Delete) i()      {}
-func (*CreateTable) i() {}
-func (*DropTable) i()   {}
+func (*Select) GetType() StatementType      { return StatementSelect }
+func (*Insert) GetType() StatementType      { return StatementInsert }
+func (*Update) GetType() StatementType      { return StatementUpdate }
+func (*Delete) GetType() StatementType      { return StatementDelete }
+func (*CreateTable) GetType() StatementType { return StatementCreateTable }
+func (*DropTable) GetType() StatementType   { return StatementDropTable }
 
 // Insert represents INSERT query.
 type Insert struct {
