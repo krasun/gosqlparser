@@ -62,15 +62,27 @@ const (
 // Statement represents parsed SQL statement. Can be one of
 // Select, Insert, Update, Delete, CreateTable or DropTable.
 type Statement interface {
+	// GetType returns the statement type.
 	GetType() StatementType
 }
 
-func (*Select) GetType() StatementType      { return StatementSelect }
-func (*Insert) GetType() StatementType      { return StatementInsert }
-func (*Update) GetType() StatementType      { return StatementUpdate }
-func (*Delete) GetType() StatementType      { return StatementDelete }
+// GetType returns the statement type.
+func (*Select) GetType() StatementType { return StatementSelect }
+
+// GetType returns the statement type.
+func (*Insert) GetType() StatementType { return StatementInsert }
+
+// GetType returns the statement type.
+func (*Update) GetType() StatementType { return StatementUpdate }
+
+// GetType returns the statement type.
+func (*Delete) GetType() StatementType { return StatementDelete }
+
+// GetType returns the statement type.
 func (*CreateTable) GetType() StatementType { return StatementCreateTable }
-func (*DropTable) GetType() StatementType   { return StatementDropTable }
+
+// GetType returns the statement type.
+func (*DropTable) GetType() StatementType { return StatementDropTable }
 
 // Insert represents INSERT query.
 type Insert struct {
