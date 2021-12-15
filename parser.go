@@ -32,6 +32,17 @@ const (
 	TypeString
 )
 
+func (t ColumnType) Name() string {
+	switch t {
+	case TypeInteger:
+		return "integer"
+	case TypeString:
+		return "string"
+	default:
+		return "unknown"
+	}
+}
+
 // Operator for prefined operator types.
 type Operator int
 
