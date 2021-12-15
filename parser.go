@@ -32,6 +32,7 @@ const (
 	TypeString
 )
 
+// Name returns the name of the type represented as a string.
 func (t ColumnType) Name() string {
 	switch t {
 	case TypeInteger:
