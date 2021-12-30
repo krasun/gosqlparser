@@ -22,6 +22,18 @@ func Parse(input string) (Statement, error) {
 	return p.statement, p.err
 }
 
+// EngineType
+type EngineType int
+
+const (
+	// EngineDefault means that engine is not specified and default one can be used.
+	EngineDefault EngineType = iota
+	// EngineLSM defines LSM-tree engine.
+	EngineLSM EngineType = iota
+	// EngineBPTree defines B+ tree engine.
+	EngineBPTree
+)
+
 // ColumnType for predefined column types.
 type ColumnType int
 
@@ -125,6 +137,7 @@ type Delete struct {
 type CreateTable struct {
 	Name    string
 	Columns []ColumnDefinition
+	Engine  EngineType
 }
 
 // ColumnDefinition represents the column definition for CREATE TABLE query.
@@ -500,7 +513,7 @@ func parseCreateTable(p *parser) parseFunc {
 		return p.error(err)
 	}
 
-	createTable := &CreateTable{t.value, []ColumnDefinition{}}
+	createTable := &CreateTable{t.value, []ColumnDefinition{}, EngineDefault}
 
 	_, err = p.scanFor(tokenLeftParenthesis)
 	if err != nil {
@@ -538,6 +551,32 @@ func parseCreateTable(p *parser) parseFunc {
 		if t.tokenType == tokenRightParenthesis {
 			break
 		}
+	}
+
+	t, err = p.scanFor(tokenEngine, tokenEnd)
+	if err != nil {
+		return p.error(err)
+	}
+
+	if t.tokenType == tokenEnd {
+		return p.statementReady(createTable)
+	}
+
+	_, err = p.scanFor(tokenAssign)
+	if err != nil {
+		return p.error(err)
+	}
+
+	t, err = p.scanFor(tokenBPTree, tokenLSM)
+	if err != nil {
+		return p.error(err)
+	}
+
+	switch t.tokenType {
+	case tokenLSM:
+		createTable.Engine = EngineLSM
+	case tokenBPTree:
+		createTable.Engine = EngineBPTree
 	}
 
 	_, err = p.scanFor(tokenEnd)

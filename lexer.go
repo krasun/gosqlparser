@@ -55,6 +55,9 @@ const (
 	tokenTable                      // TABLE
 	tokenTypeInteger                // INTEGER
 	tokenTypeString                 // STRING
+	tokenEngine                     // ENGINE
+	tokenLSM                        // LSM
+	tokenBPTree                     // B+ tree
 )
 
 var tokenToString = map[tokenType]string{
@@ -84,7 +87,9 @@ var tokenToString = map[tokenType]string{
 	tokenDrop:             "DROP",
 	tokenTable:            "TABLE",
 	tokenTypeInteger:      "typeInteger",
-	tokenTypeString:       "typeString",
+	tokenEngine:           "ENGINE",
+	tokenLSM:              "LSM",
+	tokenBPTree:           "BPTree",
 }
 
 func (t tokenType) String() string {
@@ -113,6 +118,9 @@ const (
 	keywordCreate  = "CREATE"
 	keywordDrop    = "DROP"
 	keywordTable   = "TABLE"
+	keywordEngine  = "ENGINE"
+	keywordLSM     = "LSM"
+	keywordBPTree  = "BPTREE"
 )
 
 var keywords = map[string]tokenType{
@@ -132,6 +140,9 @@ var keywords = map[string]tokenType{
 	keywordCreate:  tokenCreate,
 	keywordTable:   tokenTable,
 	keywordDrop:    tokenDrop,
+	keywordEngine:  tokenEngine,
+	keywordLSM:     tokenLSM,
+	keywordBPTree:  tokenBPTree,
 }
 
 const end = -1

@@ -98,7 +98,19 @@ func TestParser(t *testing.T) {
 		{
 			"full CREATE TABLE query",
 			"CREATE TABLE table1 (col1 INTEGER, col2 STRING)",
-			&sql.CreateTable{"table1", []sql.ColumnDefinition{{"col1", sql.TypeInteger}, {"col2", sql.TypeString}}},
+			&sql.CreateTable{"table1", []sql.ColumnDefinition{{"col1", sql.TypeInteger}, {"col2", sql.TypeString}}, sql.EngineDefault},
+			nil,
+		},
+		{
+			"full CREATE TABLE query with LSM engine",
+			"CREATE TABLE table1 (col1 INTEGER, col2 STRING) ENGINE=LSM",
+			&sql.CreateTable{"table1", []sql.ColumnDefinition{{"col1", sql.TypeInteger}, {"col2", sql.TypeString}}, sql.EngineLSM},
+			nil,
+		},
+		{
+			"full CREATE TABLE query with B+ tree engine",
+			"CREATE TABLE table1 (col1 INTEGER, col2 STRING) ENGINE=BPTREE",
+			&sql.CreateTable{"table1", []sql.ColumnDefinition{{"col1", sql.TypeInteger}, {"col2", sql.TypeString}}, sql.EngineBPTree},
 			nil,
 		},
 		{
