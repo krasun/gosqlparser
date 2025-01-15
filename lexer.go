@@ -37,7 +37,7 @@ const (
 	tokenDelimeter                  // ','
 	tokenLeftParenthesis            // '('
 	tokenRightParenthesis           // ')'
-	tokenPlaceholder                // '?'
+	tokenPlaceholder                // placeholder including '{' and '}'
 	tokenInteger                    // integer
 	tokenString                     // string including quotes
 	tokenAnd                        // AND
