@@ -37,6 +37,7 @@ const (
 	tokenDelimeter                  // ','
 	tokenLeftParenthesis            // '('
 	tokenRightParenthesis           // ')'
+	tokenPlaceholder                // '?'
 	tokenInteger                    // integer
 	tokenString                     // string including quotes
 	tokenAnd                        // AND
@@ -70,6 +71,7 @@ var tokenToString = map[tokenType]string{
 	tokenDelimeter:        "delimeter",
 	tokenLeftParenthesis:  "leftParenthesis",
 	tokenRightParenthesis: "rightParenthesis",
+	tokenPlaceholder:      "placeholder",
 	tokenInteger:          "integer",
 	tokenString:           "string",
 	tokenAnd:              "AND",
@@ -226,6 +228,9 @@ func lexStatement(l *lexer) lexFunc {
 		return lexStatement
 	case r == ')':
 		l.produce(tokenRightParenthesis)
+		return lexStatement
+	case r == '?':
+		l.produce(tokenPlaceholder)
 		return lexStatement
 	case r == '"':
 		return lexString
