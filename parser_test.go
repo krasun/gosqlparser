@@ -175,8 +175,8 @@ func TestParser(t *testing.T) {
 		},
 		{
 			"SELECT FROM with simple WHERE with placeholder",
-			"SELECT col1 FROM table1 WHERE col1 == ?",
-			&sql.Select{"table1", []string{"col1"}, &sql.Where{sql.ExprOperation{sql.ExprIdentifier{"col1"}, sql.OperatorEquals, sql.ExprValuePlaceholder{"?"}}}, ""},
+			"SELECT col1 FROM table1 WHERE col1 == {0}",
+			&sql.Select{"table1", []string{"col1"}, &sql.Where{sql.ExprOperation{sql.ExprIdentifier{"col1"}, sql.OperatorEquals, sql.ExprValuePlaceholder{"{0}"}}}, ""},
 			nil,
 		},
 		{
