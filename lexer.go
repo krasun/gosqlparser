@@ -229,9 +229,9 @@ func lexStatement(l *lexer) lexFunc {
 	case r == ')':
 		l.produce(tokenRightParenthesis)
 		return lexStatement
-	case r == '?':
-		l.produce(tokenPlaceholder)
-		return lexStatement
+	case r == '{':
+		l.revert()
+		return lexPlaceholder
 	case r == '"':
 		return lexString
 	case r == ',':
@@ -284,6 +284,21 @@ func lexString(l *lexer) lexFunc {
 	}
 
 	return lexString
+}
+
+func lexPlaceholder(l *lexer) lexFunc {
+	r := l.next()
+
+	switch r {
+	case '}':
+		l.produce(tokenPlaceholder)
+
+		return lexStatement
+	case end:
+		return l.errorf("expected }")
+	}
+
+	return lexPlaceholder
 }
 
 func lexIdentifier(l *lexer) lexFunc {
