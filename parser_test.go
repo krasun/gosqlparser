@@ -63,13 +63,13 @@ func TestParser(t *testing.T) {
 			"unfinished SELECT FROM WHERE statement",
 			"SELECT col FROM table1 WHERE",
 			nil,
-			fmt.Errorf("expected identifier, integer, string, placeholder, but got end: \"\""),
+			fmt.Errorf("expected identifier, integer, string, but got end: \"\""),
 		},
 		{
 			"unfinished WHERE statement",
 			"SELECT col FROM table1 WHERE a ==",
 			nil,
-			fmt.Errorf("expected identifier, integer, string, but got end: \"\""),
+			fmt.Errorf("expected identifier, integer, string, placeholder, but got end: \"\""),
 		},
 		{
 			"unfinished WHERE statement",
