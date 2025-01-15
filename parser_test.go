@@ -69,7 +69,7 @@ func TestParser(t *testing.T) {
 			"unfinished WHERE statement",
 			"SELECT col FROM table1 WHERE a ==",
 			nil,
-			fmt.Errorf("expected identifier, integer, string, but got end: \"\""),
+			fmt.Errorf("expected identifier, integer, string, placeholder, but got end: \"\""),
 		},
 		{
 			"unfinished WHERE statement",
@@ -174,6 +174,12 @@ func TestParser(t *testing.T) {
 			nil,
 		},
 		{
+			"SELECT FROM with simple WHERE with placeholder",
+			"SELECT col1 FROM table1 WHERE col1 == {0}",
+			&sql.Select{"table1", []string{"col1"}, &sql.Where{sql.ExprOperation{sql.ExprIdentifier{"col1"}, sql.OperatorEquals, sql.ExprValuePlaceholder{"{0}"}}}, ""},
+			nil,
+		},
+		{
 			"SELECT FROM with WHERE AND LIMIT",
 			"SELECT col1, col2 FROM table1 WHERE col1 == col2 AND col3 == col4 LIMIT 10",
 			&sql.Select{
@@ -220,6 +226,7 @@ func TestParser(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			statement, err := sql.Parse(testCase.input)
+
 			if testCase.err != nil {
 				if err == nil {
 					t.Errorf("expected error \"%s\", but got nil", testCase.err)

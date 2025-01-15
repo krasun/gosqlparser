@@ -172,6 +172,7 @@ type Expr interface {
 func (ExprIdentifier) i()   {}
 func (ExprValueInteger) i() {}
 func (ExprValueString) i()  {}
+func (ExprValuePlaceholder) i()  {}
 func (ExprOperation) i()    {}
 
 // ExprIdentifier holds the name of the identifier.
@@ -186,6 +187,11 @@ type ExprValueInteger struct {
 
 // ExprValueString holds the string value.
 type ExprValueString struct {
+	Value string
+}
+
+// ExprValuePlaceholder holds the placeholder.
+type ExprValuePlaceholder struct {
 	Value string
 }
 
@@ -636,7 +642,7 @@ func parseExprOperation(p *parser, terminalTokenTypes ...tokenType) (Expr, *toke
 		operator = OperatorEquals
 	}
 
-	t, err = p.scanFor(tokenIdentifier, tokenInteger, tokenString)
+	t, err = p.scanFor(tokenIdentifier, tokenInteger, tokenString, tokenPlaceholder)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -649,6 +655,8 @@ func parseExprOperation(p *parser, terminalTokenTypes ...tokenType) (Expr, *toke
 		right = ExprValueInteger{t.value}
 	case tokenString:
 		right = ExprValueString{t.value}
+	case tokenPlaceholder:
+		right = ExprValuePlaceholder{t.value}
 	}
 
 	var expr = ExprOperation{left, operator, right}
