@@ -39,7 +39,7 @@ const (
 	tokenRightParenthesis           // ')'
 	tokenPlaceholder                // placeholder including '{' and '}'
 	tokenInteger                    // integer
-	tokenString                     // string including quotes
+	tokenString                     // string including quotes "" or ''
 	tokenAnd                        // AND
 	tokenInsert                     // INSERT
 	tokenInto                       // INTO
@@ -232,7 +232,8 @@ func lexStatement(l *lexer) lexFunc {
 	case r == '{':
 		l.revert()
 		return lexPlaceholder
-	case r == '"':
+	case r == '"' || r == '\'':
+		l.revert()
 		return lexString
 	case r == ',':
 		l.produce(tokenDelimeter)
@@ -272,18 +273,18 @@ func lexInteger(l *lexer) lexFunc {
 
 // lexString lexes a quoted string.
 func lexString(l *lexer) lexFunc {
-	r := l.next()
+	quote := l.next()
 
-	switch r {
-	case '"':
-		l.produce(tokenString)
-
-		return lexStatement
-	case end:
-		return l.errorf("expected \"")
+	for {
+		r := l.next()
+		switch r {
+		case quote:
+			l.produce(tokenString)
+			return lexStatement
+		case end:
+			return l.errorf("unterminated string, expected %c", quote)
+		}
 	}
-
-	return lexString
 }
 
 func lexPlaceholder(l *lexer) lexFunc {
