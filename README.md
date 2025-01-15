@@ -1,7 +1,6 @@
 # gosqlparser
 
 [![Build](https://github.com/krasun/gosqlparser/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/krasun/gosqlparser/actions/workflows/build.yml)
-[![codecov](https://codecov.io/gh/krasun/gosqlparser/branch/main/graph/badge.svg?token=8NU6LR4FQD)](https://codecov.io/gh/krasun/gosqlparser)
 [![Go Report Card](https://goreportcard.com/badge/github.com/krasun/gosqlparser)](https://goreportcard.com/report/github.com/krasun/gosqlparser)
 [![GoDoc](https://godoc.org/https://godoc.org/github.com/krasun/gosqlparser?status.svg)](https://godoc.org/github.com/krasun/gosqlparser)
 

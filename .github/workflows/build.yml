@@ -21,11 +21,4 @@ jobs:
       run: go build -v .
 
     - name: Test
-      run: go test -v . -race -cover -coverprofile=coverage.txt
-
-    - name: Upload coverage report
-      uses: codecov/codecov-action@v2
-      with:
-        file: ./coverage.txt
-        fail_ci_if_error: true
-        verbose: true
+      run: go test -v . -race -cover 
