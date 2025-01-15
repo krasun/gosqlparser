@@ -104,7 +104,7 @@ func TestLexer(t *testing.T) {
 		},
 		{
 			"full SELECT query with placeholders",
-			"SELECT c1, c2 FROM table1 WHERE c1 == ? AND c2 == ?",
+			"SELECT c1, c2 FROM table1 WHERE c1 == {0} AND c2 == {placeholder}",
 			[]token{
 				{tokenSelect, "SELECT"},
 				{tokenSpace, " "},
@@ -123,7 +123,7 @@ func TestLexer(t *testing.T) {
 				{tokenSpace, " "},
 				{tokenEquals, "=="},
 				{tokenSpace, " "},
-				{tokenPlaceholder, "?"},
+				{tokenPlaceholder, "{0}"},
 				{tokenSpace, " "},
 				{tokenAnd, "AND"},
 				{tokenSpace, " "},
@@ -131,7 +131,7 @@ func TestLexer(t *testing.T) {
 				{tokenSpace, " "},
 				{tokenEquals, "=="},
 				{tokenSpace, " "},
-				{tokenPlaceholder, "?"},
+				{tokenPlaceholder, "{placeholder}"},
 				{tokenEnd, ""},
 			},
 		},
