@@ -84,6 +84,12 @@ DELETE:
 DELETE FROM table1 WHERE c1 == 5 AND c3 == "quoted string"
 ```
 
+## Placeholders
+It is possible to use placeholders by including identifiers between curly brackets.
+```
+SELECT c1, c2 FROM table1 WHERE c3 == {0} AND c4 == {p}
+```
+
 ## Tests 
 
 To make sure that the code is fully tested and covered:
